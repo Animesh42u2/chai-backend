@@ -1,23 +1,31 @@
-import { Router } from "express";
+import express from "express";
+import multer from "multer";
 import { registerUser } from "../controllers/user.controller.js";
-import {upload} from "../middlewares/multer.middlewares.js"
 
-const router = Router()
+const router = express.Router();
 
-router.route("/register").post(
+// Configure Multer for fields (avatar & coverImage)
+
+const storage = multer.diskStorage({
+   destination: (req, file, cb) => {
+      cb(null, "public/temp"); // Make sure this folder exists.
+   },
+   filename: (req, file, cb) => {
+      cb(null, Date.now() + "-" + file.originalname);
+   },
+});
+
+const upload = multer({ storage });
+
+// Apply Multer middleware correctly for avatar and coverImage fields
+
+router.post(
+    "/register",
     upload.fields([
-        {
-            name: "avtar",
-            maxCount: 1
-        },
-        {
-            name: "coverImage",
-            maxCount: 1
-        },
+        { name: "avatar", maxCount: 1 },
+        { name: "coverImage", maxCount: 1 },
     ]),
     registerUser
-)
+);
 
-
-
-export default router
+export default router;
