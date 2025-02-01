@@ -1,24 +1,29 @@
-import express from "express";
+import { Router } from "express";
 import multer from "multer";
-import { registerUser } from "../controllers/user.controller.js";
+import { 
+    loginUser, 
+    logoutUser, 
+    registerUser,
+    refreshAccessToken 
+} from "../controllers/user.controller.js";
+import { verifyJWT } from "../middlewares/auth.middleware.js";
 
-const router = express.Router();
+const router = Router();
 
-// Configure Multer for fields (avatar & coverImage)
-
+// ✅ Configure Multer Storage
 const storage = multer.diskStorage({
    destination: (req, file, cb) => {
-      cb(null, "public/temp"); // Make sure this folder exists.
+      cb(null, "public/temp"); // Make sure this folder exists
    },
    filename: (req, file, cb) => {
       cb(null, Date.now() + "-" + file.originalname);
    },
 });
 
+// ✅ Create Multer Upload Instance
 const upload = multer({ storage });
 
-// Apply Multer middleware correctly for avatar and coverImage fields
-
+// ✅ Apply Multer middleware correctly for avatar and coverImage fields
 router.post(
     "/register",
     upload.fields([
@@ -27,5 +32,11 @@ router.post(
     ]),
     registerUser
 );
+
+router.route("/login").post(loginUser);
+
+// ✅ Secured route
+router.route("/logout").post(verifyJWT, logoutUser);
+router.route("/refresh-token").post(refreshAccessToken)
 
 export default router;
